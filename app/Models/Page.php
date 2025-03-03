@@ -16,4 +16,8 @@ class Page extends Model
     {
         return $this->belongsTo(Site::class);
     }
+    public function sections()
+    {
+        return $this->hasMany(Section::class);
+    }
 }

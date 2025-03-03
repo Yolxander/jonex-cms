@@ -7,6 +7,7 @@ use App\Models\Page;
 use App\Models\Site;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Forms\Components\Select;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -22,14 +23,16 @@ class PageResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-globe-alt';
     protected static ?int $navigationSort = 2;
     protected static ?string $navigationGroup = 'Website Management';
+    protected static ?string $navigationParentItem = 'Sites';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('site_id')
+                // Site selection dropdown that fetches names from the database
+                Select::make('site_id')
                     ->label('Site')
-                    ->relationship('site', 'name')
+                    ->options(Site::pluck('name', 'id')->toArray()) // Fetches  names dynamically
                     ->required()
                     ->searchable(),
 

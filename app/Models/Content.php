@@ -15,8 +15,9 @@ class Content extends Model
         'value' => 'string', // Ensure it's stored as a string
     ];
 
-    public function section()
+    public function block()
     {
-        return $this->belongsTo(Section::class);
+        return $this->belongsTo(block::class, 'block_id');
     }
+
 }

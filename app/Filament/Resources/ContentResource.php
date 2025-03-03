@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ContentResource\Pages;
+use App\Models\Block;
 use App\Models\Content;
 use Filament\Forms;
 use Filament\Forms\Components\RichEditor;
@@ -22,28 +23,37 @@ class ContentResource extends Resource
 {
     protected static ?string $model = Content::class;
 
-
     protected static ?string $navigationIcon = 'heroicon-o-globe-alt';
+
+    protected static ?string $navigationGroup = 'Website Management';
+
+    protected static ?string $navigationParentItem = 'Sites';
+
+    protected static ?int $navigationSort = 4;
+
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Select::make('section_id')
-                    ->label('Section')
-                    ->relationship('section', 'name')
+                // Select Block
+                Select::make('block_id')
+                    ->label('Block')
+                    ->options(Block::all()->mapWithKeys(fn ($block) => [
+                        $block->id => "Block {$block->id} - {$block->type}"
+                    ]))
                     ->required()
                     ->searchable(),
 
+                // Content Type Selection
                 Select::make('type')
                     ->label('Content Type')
                     ->options([
                         'text' => 'Text',
                         'image' => 'Image',
-                        'video' => 'Video',
-                        'html' => 'HTML',
+                        'url' => 'URL',
                     ])
                     ->required()
-                    ->reactive(), // Makes it change dynamically
+                    ->reactive(), // Makes the form update dynamically
 
                 // Textarea for "text" type
                 Textarea::make('value')
@@ -51,7 +61,7 @@ class ContentResource extends Resource
                     ->rows(4)
                     ->hidden(fn ($get) => $get('type') !== 'text'),
 
-                // File upload for "image" type
+                // File Upload for "image" type
                 FileUpload::make('value')
                     ->label('Upload Image')
                     ->image()
@@ -62,23 +72,20 @@ class ContentResource extends Resource
                     ->hidden(fn ($get) => $get('type') !== 'image')
                     ->dehydrated(fn ($get) => $get('type') === 'image'),
 
-
-
-        // Text input for "video" type (e.g., YouTube URL)
+                // Text Input for "URL" type
                 TextInput::make('value')
-                    ->label('Video URL')
+                    ->label('URL')
+                    ->placeholder('https://example.com')
                     ->url()
-                    ->placeholder('https://youtube.com/watch?v=...')
-                    ->hidden(fn ($get) => $get('type') !== 'video'),
+                    ->hidden(fn ($get) => $get('type') !== 'url'),
 
-                // Use RichEditor instead of CodeEditor
+                // Rich Text Editor for "html" type (Optional)
                 RichEditor::make('value')
                     ->label('HTML Content')
                     ->toolbarButtons([
                         'bold', 'italic', 'underline', 'link', 'codeBlock'
                     ])
                     ->hidden(fn ($get) => $get('type') !== 'html'),
-
             ]);
     }
 
@@ -86,8 +93,8 @@ class ContentResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('section.name')
-                    ->label('Section')
+                Tables\Columns\TextColumn::make('block.type')
+                    ->label('Block Type')
                     ->sortable()
                     ->searchable(),
 

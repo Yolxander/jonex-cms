@@ -10,7 +10,7 @@ return new class extends Migration {
         Schema::create('contents', function (Blueprint $table) {
             $table->id();
             $table->foreignId('section_id')->constrained()->onDelete('cascade');
-            $table->enum('type', ['text', 'image', 'video', 'html']);
+            $table->enum('type', ['text', 'image', 'url']);
             $table->text('value')->nullable(); // Stores text or file path
             $table->timestamps();
             $table->softDeletes();

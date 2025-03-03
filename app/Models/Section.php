@@ -16,8 +16,8 @@ class Section extends Model
         return $this->belongsTo(Page::class);
     }
 
-    public function content()
+    public function blocks()
     {
-        return $this->hasMany(Content::class);
+        return $this->hasMany(Block::class);
     }
 }
