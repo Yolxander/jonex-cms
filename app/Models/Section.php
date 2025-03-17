@@ -20,4 +20,10 @@ class Section extends Model
     {
         return $this->hasMany(Block::class);
     }
+
+
+    public function translations()
+    {
+        return $this->hasMany(Translation::class);
+    }
 }

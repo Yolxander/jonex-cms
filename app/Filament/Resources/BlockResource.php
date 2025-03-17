@@ -21,8 +21,8 @@ class BlockResource extends Resource
     protected static ?string $model = Block::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-collection';
-    protected static ?int $navigationSort = 3;
-    protected static ?string $navigationGroup = 'Website Management';
+//    protected static ?int $navigationSort = 3;
+//    protected static ?string $navigationGroup = 'Website Management';
 
     protected static ?string $navigationParentItem = 'Sites';
 

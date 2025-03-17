@@ -9,5 +9,10 @@ class Translation extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['language', 'key', 'value'];
+    protected $fillable = ['section_id', 'language', 'key', 'value'];
+
+    public function section()
+    {
+        return $this->belongsTo(Section::class);
+    }
 }
