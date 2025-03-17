@@ -11,8 +11,6 @@ use Filament\Forms\Components\Textarea;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Actions\Action;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Session;
 
 class TranslationResource extends Resource
@@ -66,7 +64,8 @@ class TranslationResource extends Resource
                 TextColumn::make('key')
                     ->label('Translation Key')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->formatStateUsing(fn ($state) => str_contains($state, '.') ? substr(strrchr($state, '.'), 1) : $state),
 
                 TextColumn::make('value')
                     ->label('Translation Value')
@@ -81,12 +80,6 @@ class TranslationResource extends Resource
                         'es' => 'Spanish',
                     ])
                     ->default(Session::get('translation_language', 'en')),
-            ])
-            ->actions([
-                Action::make('toggleLanguage')
-                    ->label(fn () => Session::get('translation_language', 'en') === 'en' ? 'Show Spanish Translations' : 'Show English Translations')
-                    ->action(fn () => Session::put('translation_language', Session::get('translation_language', 'en') === 'en' ? 'es' : 'en'))
-                    ->color('primary'),
             ])
             ->defaultSort('section.name');
     }

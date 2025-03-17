@@ -10,7 +10,6 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Session;
 
@@ -53,7 +52,8 @@ class TranslationRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('key')
                     ->label('Key')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->formatStateUsing(fn ($state) => str_contains($state, '.') ? substr(strrchr($state, '.'), 1) : $state),
 
                 Tables\Columns\TextColumn::make('value')
                     ->label('Translation')
@@ -70,10 +70,6 @@ class TranslationRelationManager extends RelationManager
                     ->default(Session::get('translation_language', 'en')),
             ])
             ->actions([
-                Action::make('toggleLanguage')
-                    ->label(fn () => Session::get('translation_language', 'en') === 'en' ? 'Show Spanish Translations' : 'Show English Translations')
-                    ->action(fn () => Session::put('translation_language', Session::get('translation_language', 'en') === 'en' ? 'es' : 'en'))
-                    ->color('primary'),
                 EditAction::make(),
                 DeleteAction::make(),
             ])
