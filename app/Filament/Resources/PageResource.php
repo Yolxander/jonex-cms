@@ -3,16 +3,18 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\PageResource\Pages;
+use App\Filament\Resources\SectionResource\RelationManagers\SectionsRelationManager;
 use App\Models\Page;
 use App\Models\Site;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Filters\TrashedFilter;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -29,22 +31,25 @@ class PageResource extends Resource
     {
         return $form
             ->schema([
-                // Site selection dropdown that fetches names from the database
                 Select::make('site_id')
                     ->label('Site')
-                    ->options(Site::pluck('name', 'id')->toArray()) // Fetches  names dynamically
+                    ->options(Site::pluck('name', 'id')->toArray())
                     ->required()
-                    ->searchable(),
+                    ->searchable()
+                    // Disable if user does not have 'admin' role
+                    ->disabled(fn () => ! auth()->user()->hasRole('admin')),
 
                 Forms\Components\TextInput::make('title')
                     ->label('Page Title')
                     ->required()
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->disabled(fn () => ! auth()->user()->hasRole('admin')),
 
                 Forms\Components\TextInput::make('slug')
                     ->label('Slug')
                     ->unique(ignoreRecord: true)
-                    ->required(),
+                    ->required()
+                    ->disabled(fn () => ! auth()->user()->hasRole('admin')),
             ]);
     }
 
@@ -76,18 +81,25 @@ class PageResource extends Resource
                 TrashedFilter::make(),
             ])
             ->actions([
-                EditAction::make(),
-                DeleteAction::make(),
+                EditAction::make()
+                    // Disable Edit if user doesn't have 'admin' role
+                    ->disabled(fn () => ! auth()->user()->hasRole('admin')),
+
+                DeleteAction::make()
+                    // Disable Delete if user doesn't have 'admin' role
+                    ->disabled(fn () => ! auth()->user()->hasRole('admin')),
             ])
             ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
+                DeleteBulkAction::make()
+                    // Disable bulk Delete if user doesn't have 'admin' role
+                    ->disabled(fn () => ! auth()->user()->hasRole('admin')),
             ]);
     }
 
     public static function getRelations(): array
     {
         return [
-            SectionResource\RelationManagers\SectionsRelationManager::class,
+            SectionsRelationManager::class,
         ];
     }
 

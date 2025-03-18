@@ -6,20 +6,17 @@ use App\Filament\Resources\SectionResource\Pages;
 use App\Filament\Resources\SectionResource\RelationManagers\TranslationRelationManager;
 use App\Models\Page;
 use App\Models\Section;
-use App\Models\Translation;
 use Filament\Forms;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\Repeater;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Table;
 use Filament\Tables\Filters\SelectFilter;
-use Illuminate\Database\Eloquent\Builder;
 
 class SectionResource extends Resource
 {
@@ -39,13 +36,16 @@ class SectionResource extends Resource
                     ->options(Page::pluck('title', 'id')->toArray())
                     ->required()
                     ->searchable()
-                    ->columnSpanFull(),
+                    ->columnSpanFull()
+                    // Disable if user is not admin
+                    ->disabled(fn () => ! auth()->user()->hasRole('admin')),
 
                 TextInput::make('name')
                     ->label('Section Name')
                     ->required()
                     ->maxLength(255)
-                    ->columnSpanFull(),
+                    ->columnSpanFull()
+                    ->disabled(fn () => ! auth()->user()->hasRole('admin')),
             ])
             ->columns(1);
     }
@@ -80,18 +80,24 @@ class SectionResource extends Resource
                     ->relationship('page', 'title'),
             ])
             ->actions([
-                EditAction::make(),
-                DeleteAction::make(),
+                EditAction::make()
+                    // Disable Edit if user is not admin
+                    ->disabled(fn () => ! auth()->user()->hasRole('admin')),
+                DeleteAction::make()
+                    // Disable Delete if user is not admin
+                    ->disabled(fn () => ! auth()->user()->hasRole('admin')),
             ])
             ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
+                DeleteBulkAction::make()
+                    // Disable bulk Delete if user is not admin
+                    ->disabled(fn () => ! auth()->user()->hasRole('admin')),
             ]);
     }
 
     public static function getRelations(): array
     {
         return [
-            TranslationRelationManager::class, // Connect Translations to Sections
+            TranslationRelationManager::class,
         ];
     }
 

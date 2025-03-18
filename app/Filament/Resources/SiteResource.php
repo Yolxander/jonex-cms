@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\SiteResource\Pages;
 use App\Models\Site;
+use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -12,6 +13,7 @@ use Filament\Tables\Table;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\EditAction;
 use Illuminate\Database\Eloquent\Builder;
+use Spatie\Permission\Traits\HasRoles; // Ensure your User model uses HasRoles
 
 class SiteResource extends Resource
 {
@@ -28,22 +30,27 @@ class SiteResource extends Resource
                 Forms\Components\TextInput::make('name')
                     ->label('Site Name')
                     ->required()
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    // Disable if user doesn't have 'admin' role
+                    ->disabled(fn () => ! auth()->user()->hasRole('admin')),
 
                 Forms\Components\TextInput::make('slug')
                     ->label('Slug')
                     ->unique(ignoreRecord: true)
-                    ->required(),
+                    ->required()
+                    ->disabled(fn () => ! auth()->user()->hasRole('admin')),
 
                 Forms\Components\TextInput::make('url')
                     ->label('Website URL')
                     ->url()
-                    ->required(),
+                    ->required()
+                    ->disabled(fn () => ! auth()->user()->hasRole('admin')),
 
                 Forms\Components\Textarea::make('description')
                     ->label('Description')
                     ->rows(4)
-                    ->nullable(),
+                    ->nullable()
+                    ->disabled(fn () => ! auth()->user()->hasRole('admin')),
             ]);
     }
 
@@ -71,11 +78,18 @@ class SiteResource extends Resource
                     ->sortable(),
             ])
             ->actions([
-                EditAction::make(),
-                DeleteAction::make(),
+                EditAction::make()
+                    // Disable Edit if user doesn't have 'admin' role
+                    ->disabled(fn () => ! auth()->user()->hasRole('admin')),
+
+                DeleteAction::make()
+                    // Disable Delete if user doesn't have 'admin' role
+                    ->disabled(fn () => ! auth()->user()->hasRole('admin')),
             ])
             ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
+                Tables\Actions\DeleteBulkAction::make()
+                    // Disable bulk Delete if user doesn't have 'admin' role
+                    ->disabled(fn () => ! auth()->user()->hasRole('admin')),
             ]);
     }
 
