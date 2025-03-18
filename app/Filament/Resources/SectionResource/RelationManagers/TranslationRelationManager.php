@@ -28,6 +28,7 @@ class TranslationRelationManager extends RelationManager
                         'en' => 'English',
                         'es' => 'Spanish',
                     ])
+                    ->disabled() // Prevent editing key
                     ->required(),
 
                 TextInput::make('key')
@@ -37,7 +38,9 @@ class TranslationRelationManager extends RelationManager
 
                 Textarea::make('value')
                     ->label('Translation Value')
-                    ->required(),
+                    ->required()
+                    ->rows(7) // Increased size
+                    ->columnSpanFull(), // Makes it take full width for better UX
             ]);
     }
 
