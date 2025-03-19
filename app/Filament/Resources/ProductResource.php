@@ -11,13 +11,15 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\EditAction;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class ProductResource extends Resource
 {
     protected static ?string $model = Product::class;
-
     protected static ?string $navigationIcon = 'heroicon-o-shopping-cart';
     protected static ?int $navigationSort = 3;
     protected static ?string $navigationGroup = 'Orders';
@@ -26,30 +28,45 @@ class ProductResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')
+                TextInput::make('name')
                     ->label('Product Name')
                     ->required()
                     ->maxLength(255),
 
-                Forms\Components\TextInput::make('sku')
+                Select::make('category_id')
+                    ->label('Category')
+                    ->relationship('category', 'name')
+                    ->searchable()
+                    ->required(),
+
+                TextInput::make('sku')
                     ->label('SKU')
                     ->unique(ignoreRecord: true)
                     ->required(),
 
-                Forms\Components\TextInput::make('price')
+                TextInput::make('price')
                     ->label('Price')
                     ->numeric()
                     ->required(),
 
-                Forms\Components\TextInput::make('stock')
+                TextInput::make('stock')
                     ->label('Stock Quantity')
                     ->numeric()
                     ->required(),
 
-                Forms\Components\Textarea::make('description')
+                Textarea::make('description')
                     ->label('Description')
                     ->rows(4)
                     ->nullable(),
+
+                Select::make('live')
+                    ->label('Live')
+                    ->options([
+                        0 => 'False',
+                        1 => 'True',
+                    ])
+                    ->default(0)
+                    ->required(),
             ]);
     }
 
@@ -59,6 +76,11 @@ class ProductResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->label('Product Name')
+                    ->sortable()
+                    ->searchable(),
+
+                Tables\Columns\TextColumn::make('category.name')
+                    ->label('Category')
                     ->sortable()
                     ->searchable(),
 
@@ -76,13 +98,29 @@ class ProductResource extends Resource
                     ->label('Stock')
                     ->sortable(),
 
+                Tables\Columns\TextColumn::make('live')
+                    ->label('Live')
+                    ->sortable()
+                    ->formatStateUsing(fn ($state) => $state ? 'True' : 'False') // Converts 1/0 to "True" or "False"
+                    ->badge()
+                    ->color(fn ($state) => $state ? 'success' : 'gray'), // Green for True, Gray for False
+
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Created At')
                     ->dateTime()
                     ->sortable(),
             ])
             ->filters([
-                Tables\Filters\TrashedFilter::make(), // Enables SoftDelete filtering
+                Tables\Filters\SelectFilter::make('category_id')
+                    ->label('Filter by Category')
+                    ->relationship('category', 'name'),
+
+                Tables\Filters\SelectFilter::make('live')
+                    ->label('Live Status')
+                    ->options([
+                        0 => 'False',
+                        1 => 'True',
+                    ]),
             ])
             ->actions([
                 EditAction::make(),
@@ -98,7 +136,8 @@ class ProductResource extends Resource
     public static function getRelations(): array
     {
         return [
-            // Here you can add relations, such as OrderItems if needed
+            ProductResource\RelationManagers\FormatsRelationManager::class,
+            ProductResource\RelationManagers\TranslationsRelationManager::class,
         ];
     }
 

@@ -30,4 +30,9 @@ class Product extends Model
     {
         return $this->hasMany(ProductFormat::class);
     }
+
+    public function product_translation()
+    {
+        return $this->hasMany(ProductTranslation::class);
+    }
 }
