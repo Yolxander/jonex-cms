@@ -16,8 +16,9 @@ use Illuminate\Support\Facades\Session;
 class TranslationResource extends Resource
 {
     protected static ?string $model = Translation::class;
-    protected static ?string $navigationGroup = 'Content Management';
-    protected static ?int $navigationSort = 1; // Adjust position in menu
+    protected static ?string $navigationGroup = 'Website Management';
+    protected static ?string $navigationIcon = 'heroicon-o-globe-alt';
+    protected static ?int $navigationSort = 5; // Adjust position in menu
 
     public static function form(Forms\Form $form): Forms\Form
     {
