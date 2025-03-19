@@ -53,12 +53,6 @@ class ProductResource extends Resource
                     ->label('Stock Quantity')
                     ->numeric()
                     ->required(),
-
-                Textarea::make('description')
-                    ->label('Description')
-                    ->rows(4)
-                    ->nullable(),
-
                 Select::make('live')
                     ->label('Live')
                     ->options([
@@ -67,6 +61,11 @@ class ProductResource extends Resource
                     ])
                     ->default(0)
                     ->required(),
+
+                Textarea::make('description')
+                    ->label('Description')
+                    ->rows(4)
+                    ->nullable(),
             ]);
     }
 
@@ -82,7 +81,8 @@ class ProductResource extends Resource
                 Tables\Columns\TextColumn::make('category.name')
                     ->label('Category')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->formatStateUsing(fn ($state) => $state ?? 'No Category'), // Handles NULL categories
 
                 Tables\Columns\TextColumn::make('sku')
                     ->label('SKU')
