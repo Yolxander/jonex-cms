@@ -39,8 +39,7 @@ class TranslationResource extends Resource
 
                 TextInput::make('key')
                     ->label('Translation Key')
-                    ->required()
-                    ->disabled(), // Prevents user from editing the key
+                    ->required(),
 
                 Textarea::make('value')
                     ->label('Translation Value')
