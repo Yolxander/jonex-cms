@@ -13,7 +13,7 @@ class CategoryController extends Controller
      */
     public function index(): JsonResponse
     {
-        $categories = Category::with(['products' => function ($query) {
+        $categories = Category::with(['translations','products' => function ($query) {
             $query->where('live', 1);
         }])->get();
 
