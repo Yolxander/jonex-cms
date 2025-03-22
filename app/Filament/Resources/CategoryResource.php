@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\CategoryResource\Pages;
+use App\Filament\Resources\CategoryResource\RelationManagers\CategoryTranslationsRelationManager;
 use App\Filament\Resources\CategoryResource\RelationManagers\ProductsRelationManager;
 use App\Models\Category;
 use Filament\Forms;
@@ -18,6 +19,7 @@ class CategoryResource extends Resource
     protected static ?string $model = Category::class;
     protected static ?string $navigationIcon = 'heroicon-o-tag';
     protected static ?string $navigationGroup = 'Orders';
+    protected static ?int $navigationSort = 3;
 
     public static function form(Form $form): Form
     {
@@ -63,6 +65,7 @@ class CategoryResource extends Resource
     {
         return [
             ProductsRelationManager::class,
+            CategoryTranslationsRelationManager::class, // ✅ Translation relation
         ];
     }
 
