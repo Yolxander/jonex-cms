@@ -2,14 +2,17 @@
 
 namespace App\Models;
 
+use App\Services\OpenAITranslationService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 class Product extends Model
 {
     use SoftDeletes;
 
     protected $fillable = ['name', 'description', 'sku', 'price', 'category_id', 'live'];
+
 
     public function category()
     {
