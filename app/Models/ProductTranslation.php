@@ -6,56 +6,65 @@ use App\Services\OpenAITranslationService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Translation extends Model
+class ProductTranslation extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['section_id', 'language', 'key', 'value'];
+    protected $fillable = ['product_id', 'language', 'title', 'subtitle', 'description'];
 
     protected static function booted()
     {
         static::saving(function ($translation) {
-            // ✅ Only handle English updates
             if ($translation->language !== 'en') {
                 return;
             }
 
-            // ✅ Only proceed if the 'value' field changed
-            if (! array_key_exists('value', $translation->getDirty())) {
+            $product = $translation->product;
+
+            if (! $product) {
                 return;
             }
 
-            // ✅ Load the related section
-            $section = $translation->section;
-            if (! $section) {
-                return;
+            // Only track fields that are being changed
+            $dirtyFields = collect($translation->getDirty())
+                ->only(['title', 'subtitle', 'description'])
+                ->keys()
+                ->toArray();
+
+            if (empty($dirtyFields)) {
+                return; // Nothing relevant changed
             }
 
-            // ✅ Find or create the Spanish version of this translation
             $spanish = self::firstOrNew([
-                'section_id' => $section->id,
-                'key' => $translation->key,
+                'product_id' => $product->id,
                 'language' => 'es',
             ]);
 
-            // ✅ Translate updated value to Spanish
-            $sourceValue = $translation->value;
-            if (!empty($sourceValue)) {
-                $openai = app(OpenAITranslationService::class);
-                $translatedValue = $openai->translate($sourceValue, 'Spanish');
-                $spanish->value = $translatedValue;
-                $spanish->save();
+            $openai = app(OpenAITranslationService::class);
+            $updated = false;
 
-                logger()->info("Translated value from English to Spanish", [
-                    'section_id' => $section->id,
-                    'key' => $translation->key,
+            foreach ($dirtyFields as $field) {
+                $sourceValue = $translation->{$field};
+
+                if (!empty($sourceValue)) {
+                    $translatedValue = $openai->translate($sourceValue, 'Spanish');
+                    $spanish->{$field} = $translatedValue;
+                    $updated = true;
+                }
+            }
+
+            if ($updated) {
+                $spanish->save();
+                logger()->info("Updated Spanish product translation fields", [
+                    'product_id' => $product->id,
+                    'fields' => $dirtyFields,
                 ]);
             }
         });
     }
 
-    public function section()
+    public function product()
     {
-        return $this->belongsTo(Section::class);
+        return $this->belongsTo(Product::class);
     }
 }

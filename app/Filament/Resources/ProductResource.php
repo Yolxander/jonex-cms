@@ -16,6 +16,9 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Tables\Actions\BulkAction;
+use Filament\Tables\Actions\BulkActionGroup;
+use Illuminate\Database\Eloquent\Collection;
 
 class ProductResource extends Resource
 {
@@ -53,6 +56,7 @@ class ProductResource extends Resource
                     ->label('Stock Quantity')
                     ->numeric()
                     ->required(),
+
                 Select::make('live')
                     ->label('Live')
                     ->options([
@@ -82,7 +86,7 @@ class ProductResource extends Resource
                     ->label('Category')
                     ->sortable()
                     ->searchable()
-                    ->formatStateUsing(fn ($state) => $state ?? 'No Category'), // Handles NULL categories
+                    ->formatStateUsing(fn ($state) => $state ?? 'No Category'),
 
                 Tables\Columns\TextColumn::make('sku')
                     ->label('SKU')
@@ -101,9 +105,9 @@ class ProductResource extends Resource
                 Tables\Columns\TextColumn::make('live')
                     ->label('Live')
                     ->sortable()
-                    ->formatStateUsing(fn ($state) => $state ? 'True' : 'False') // Converts 1/0 to "True" or "False"
+                    ->formatStateUsing(fn ($state) => $state ? 'True' : 'False')
                     ->badge()
-                    ->color(fn ($state) => $state ? 'success' : 'gray'), // Green for True, Gray for False
+                    ->color(fn ($state) => $state ? 'success' : 'gray'),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Created At')
@@ -127,8 +131,17 @@ class ProductResource extends Resource
                 DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
+                BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+
+                    BulkAction::make('set_inactive')
+                        ->label('Set Live to False')
+                        ->requiresConfirmation()
+                        ->action(function (Collection $records) {
+                            $records->each->update(['live' => 0]);
+                        })
+                        ->color('danger')
+                        ->icon('heroicon-o-eye-slash'),
                 ]),
             ]);
     }
