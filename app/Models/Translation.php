@@ -14,29 +14,52 @@ class Translation extends Model
 
     protected static function booted()
     {
-        static::saved(function ($translation) {
-            // Trigger only when English version is saved
-            if ($translation->language === 'en') {
-                $section = $translation->section;
+        static::saving(function ($translation) {
+            // ✅ Only handle English updates
+            if ($translation->language !== 'en') {
+                return;
+            }
 
-                if ($section) {
-                    $spanishExists = self::where('section_id', $section->id)
-                        ->where('key', $translation->key)
-                        ->where('language', 'es')
-                        ->exists();
+            // ✅ Only proceed if the 'value' field changed
+            if (! array_key_exists('value', $translation->getDirty())) {
+                return;
+            }
 
-                    if (! $spanishExists) {
-                        app(OpenAITranslationService::class)->generateTranslationsForModel(
-                            $section,
-                            self::class,
-                            'section_id',
-                            ['value'],
-                            ['es' => 'Spanish']
-                        );
-                    }
-                }
+            // ✅ Load the related section
+            $section = $translation->section;
+            if (! $section) {
+                return;
+            }
+
+            // ✅ Find or create the Spanish version of this translation
+            $spanish = self::firstOrNew([
+                'section_id' => $section->id,
+                'key' => $translation->key,
+                'language' => 'es',
+            ]);
+
+            // ✅ Translate updated value to Spanish
+            $sourceValue = $translation->value;
+            if (!empty($sourceValue)) {
+                $openai = app(OpenAITranslationService::class);
+                $translatedValue = $openai->translate($sourceValue, 'Spanish');
+                $spanish->value = $translatedValue;
+                $spanish->save();
+
+                logger()->info("Translated value from English to Spanish", [
+                    'section_id' => $section->id,
+                    'key' => $translation->key,
+                ]);
             }
         });
+    }
+
+
+    public function linkedTranslations()
+    {
+        return $this->hasMany(self::class, 'section_id', 'section_id')
+            ->where('key', $this->key)
+            ->where('language', '!=', $this->language);
     }
 
     public function section()

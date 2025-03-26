@@ -18,7 +18,7 @@ class TranslationResource extends Resource
     protected static ?string $model = Translation::class;
     protected static ?string $navigationGroup = 'Website Management';
     protected static ?string $navigationIcon = 'heroicon-o-globe-alt';
-    protected static ?int $navigationSort = 5; // Adjust position in menu
+    protected static ?int $navigationSort = 5;
 
     public static function form(Forms\Form $form): Forms\Form
     {
@@ -27,6 +27,7 @@ class TranslationResource extends Resource
                 Select::make('section_id')
                     ->label('Section')
                     ->relationship('section', 'name')
+                    ->searchable()
                     ->required(),
 
                 Select::make('language')
@@ -35,16 +36,16 @@ class TranslationResource extends Resource
                         'en' => 'English',
                         'es' => 'Spanish',
                     ])
-                    ->required(),
+                    ->required()
+                    ->default('en'),
 
                 TextInput::make('key')
-                    ->label('Translation Key')
-                    ->required(),
+                    ->label('Translation Key'),
 
                 Textarea::make('value')
                     ->label('Translation Value')
                     ->required()
-                    ->rows(3),
+                    ->rows(4),
             ]);
     }
 
@@ -69,8 +70,9 @@ class TranslationResource extends Resource
 
                 TextColumn::make('value')
                     ->label('Translation Value')
-                    ->limit(50)
-                    ->sortable(),
+                    ->limit(60)
+                    ->sortable()
+                    ->tooltip(fn ($record) => $record->value),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('language')
@@ -86,7 +88,9 @@ class TranslationResource extends Resource
 
     public static function getRelations(): array
     {
-        return [];
+        return [
+            \App\Filament\Resources\TranslationResource\RelationManagers\LinkedTranslationRelationManager::class,
+        ];
     }
 
     public static function getPages(): array
