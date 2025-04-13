@@ -10,12 +10,24 @@ class PageSeeder extends Seeder
 {
     public function run()
     {
-        $site = Site::where('slug', 'jonex-sas')->first();
+//        // Jonex S.A.S. landing page
+//        $sasSite = Site::where('slug', 'jonex-sas')->first();
+//
+//        Page::firstOrCreate([
+//            'site_id' => $sasSite->id,
+//            'slug' => 'landing'
+//        ], [
+//            'title' => 'Landing Page',
+//        ]);
 
-        Page::create([
-            'site_id' => $site->id,
-            'title' => 'Landing Page',
-            'slug' => 'landing'
+        // Jonex Canada landing page
+        $caSite = Site::where('slug', 'jonex-ca')->first();
+
+        Page::firstOrCreate([
+            'site_id' => $caSite->id,
+            'slug' => 'jonex-canada-landing'
+        ], [
+            'title' => 'Jonex Canada Landing Page',
         ]);
     }
 }
